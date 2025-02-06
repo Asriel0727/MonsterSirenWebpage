@@ -6,7 +6,7 @@ let currentPage = 1;
 async function fetchAlbums(page = 1) {
   try {
     const response = await fetch(
-      "http://monstersiren-demo.vercel.app/api/albums"
+      "http://monstersiren-web-api.vercel.app/api/albums"
     );
     const { data: albums } = await response.json();
     const albumContainer = document.getElementById("albums");
@@ -18,7 +18,7 @@ async function fetchAlbums(page = 1) {
       const albumDiv = document.createElement("div");
       albumDiv.classList.add("album");
       albumDiv.innerHTML = `
-                <img loading="lazy" src="http://monstersiren-demo.vercel.app/proxy-image?url=${encodeURIComponent(
+                <img loading="lazy" src="http://monstersiren-web-api.vercel.app/proxy-image?url=${encodeURIComponent(
                   album.coverUrl
                 )}" alt="${album.name}" onload="this.classList.add('loaded')">
                 <div class="marquee-item-wrapper">
@@ -59,7 +59,7 @@ function handleScroll() {
 async function fetchAlbumDetails(albumId) {
   try {
     const response = await fetch(
-      `http://monstersiren-demo.vercel.app/api/album/${albumId}/detail`
+      `http://monstersiren-web-api.vercel.app/api/album/${albumId}/detail`
     );
     const { data: album } = await response.json();
 
@@ -72,7 +72,7 @@ async function fetchAlbumDetails(albumId) {
 async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
   try {
     const response = await fetch(
-      `http://monstersiren-demo.vercel.app/api/song/${songId}`
+      `http://monstersiren-web-api.vercel.app/api/song/${songId}`
     );
     const { data: song } = await response.json();
 
@@ -126,7 +126,7 @@ function renderDetails(mode, data, albumData = {}) {
     modalBody.innerHTML = `
 <div class="album-details-modal-content">
     <div class="album-details-modal-left">
-        <img loading="lazy" src="http://monstersiren-demo.vercel.app/proxy-image?url=${encodeURIComponent(
+        <img loading="lazy" src="http://monstersiren-web-api.vercel.app/proxy-image?url=${encodeURIComponent(
           data.coverUrl
         )}" alt="${data.name}" onload="this.classList.add('loaded')">
         <h2>${data.name}</h2>
@@ -134,7 +134,7 @@ function renderDetails(mode, data, albumData = {}) {
         <p>${data.intro}</p>
     </div>
     <div class="album-details-modal-right">
-        <img loading="lazy" src="http://monstersiren-demo.vercel.app/proxy-image?url=${encodeURIComponent(
+        <img loading="lazy" src="http://monstersiren-web-api.vercel.app/proxy-image?url=${encodeURIComponent(
           data.coverDeUrl
         )}" alt="${
       data.name
@@ -167,7 +167,7 @@ function renderDetails(mode, data, albumData = {}) {
     modalBody.innerHTML = `
 <div class="album-details-modal-content">
     <div class="album-details-modal-left">
-        <img loading="lazy" src="http://monstersiren-demo.vercel.app/proxy-image?url=${encodeURIComponent(
+        <img loading="lazy" src="http://monstersiren-web-api.vercel.app/proxy-image?url=${encodeURIComponent(
           coverUrl
         )}" alt="${data.name}" onload="this.classList.add('loaded')">
         <h2>${data.name}</h2>
@@ -199,7 +199,7 @@ function renderDetails(mode, data, albumData = {}) {
         </div>
     </div>
     <div class="album-details-modal-right">
-        <img loading="lazy" src="http://monstersiren-demo.vercel.app/proxy-image?url=${encodeURIComponent(
+        <img loading="lazy" src="http://monstersiren-web-api.vercel.app/proxy-image?url=${encodeURIComponent(
           coverDeUrl
         )}" alt="${data.name}" onload="this.classList.add('loaded')">
         <h3>歌詞</h3>

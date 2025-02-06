@@ -1,1 +1,0 @@
-Content-Security-Policy: default-src 'self'; script-src 'self' https://vercel.live https://monstersiren-demo.vercel.app; connect-src 'self' https://monstersiren-demo.vercel.app;
