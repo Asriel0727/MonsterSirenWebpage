@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "rewrites": [
+      {
+        "source": "/api/(.*)",
+        "destination": "http://monstersiren-web-api.vercel.app/api/:path*"
+      },
+      {
+        "source": "/proxy-image",
+        "destination": "http://monstersiren-web-api.vercel.app/proxy-image"
+      }
+    ]
+  }
+  
