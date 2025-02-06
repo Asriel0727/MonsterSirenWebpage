@@ -1,0 +1,296 @@
+/* 全局設定：設置頁面外邊距、字體、背景色和文字顏色 */
+body {
+    margin: 0; /* 移除預設外邊距 */
+    font-family: 'Roboto', sans-serif; /* 設定網頁字體 */
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* 135度的漸層背景色 */
+    color: #c9d1d9; /* 頁面文字顏色 */
+    display: flex; /* 使用 Flexbox 佈局 */
+    flex-direction: column; /* 元素垂直排列 */
+    align-items: center; /* 水平置中對齊 */
+    justify-content: center; /* 垂直置中 */
+}
+
+/* 主標題樣式 */
+h1 {
+    color: #58a6ff; /* 設定標題文字顏色 */
+    margin-top: 20px; /* 上方留白 */
+    text-shadow: 0px 3px 10px rgba(0, 128, 255, 0.5); /* 文字陰影 */
+}
+
+/* 跑馬燈效果的項目樣式 */
+.marquee-item {
+    white-space: nowrap; /* 確保文字不換行 */
+    display: inline-block; /* 水平排列 */
+    position: scroll linear infinite; /* 滾動參考點 (無效，可能需修正) */
+}
+
+/* 跑馬燈動畫 */
+.marquee-scroll {
+    animation: scroll 10s linear infinite; /* 滾動動畫持續執行 */
+}
+
+.marquee-item-wrapper {
+    width: 100%; /* 滿版寬度 */
+    overflow: hidden; /* 隱藏溢出內容 */
+    position: relative; /* 為滾動效果設參考點 */
+    display: block;
+}
+
+/* 按鈕樣式 */
+button {
+    background: #21262d; /* 按鈕背景色 */
+    border: 1px solid #58a6ff; /* 外框顏色 */
+    color: #c9d1d9; /* 按鈕文字顏色 */
+    padding: 10px 20px; /* 內距 */
+    cursor: pointer; /* 滑鼠變為手指 */
+    border-radius: 5px; /* 邊框圓角 */
+    transition: all 0.3s ease; /* 過渡效果 */
+}
+
+button:hover {
+    background: #58a6ff; /* 懸停時背景色 */
+    color: #0d1117; /* 懸停時文字顏色 */
+}
+
+/* 專輯列表容器 */
+#albums {
+    display: grid; /* 使用 Grid 佈局 */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 自動調整列數 */
+    gap: 20px; /* 專輯間距 */
+    width: 100%; /* 滿版寬度 */
+    max-width: 1200px; /* 最大寬度 */
+    margin: 20px 0; /* 上下外距 */
+}
+
+/* 單個專輯樣式 */
+.album {
+    background-color: #161b22; /* 專輯卡片背景色 */
+    border-radius: 10px; /* 邊框圓角 */
+    padding: 15px; /* 內距 */
+    text-align: center; /* 文字置中 */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* 陰影效果 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 過渡效果 */
+}
+
+.album:hover {
+    transform: scale(1.05); /* 滑鼠懸停時放大效果 */
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.5); /* 陰影加深 */
+}
+
+.album img {
+    width: 100%; /* 滿版寬度 */
+    height: 200px; /* 固定高度 */
+    object-fit: contain; /* 圖片不裁切，完整顯示 */
+    border-radius: 10px; /* 圓角 */
+    margin-bottom: 10px; /* 下方間距 */
+}
+
+/* 跑馬燈滾動動畫設定 */
+@keyframes scroll {
+    0% {
+        transform: translateX(100%); /* 初始位置在右側外部 */
+    }
+
+    100% {
+        transform: translateX(-100%); /* 結束位置在左側外部 */
+    }
+}
+
+/* 旋轉動畫 */
+@keyframes spin {
+    from {
+        transform: rotate(0deg); /* 初始角度 */
+    }
+
+    to {
+        transform: rotate(360deg); /* 完整旋轉 */
+    }
+}
+
+/* Modal 彈跳視窗 */
+.modal {
+    position: fixed; /* 固定位置 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* 半透明背景 */
+    display: flex; /* Flex 排版 */
+    justify-content: center; /* 水平置中 */
+    align-items: center; /* 垂直置中 */
+    z-index: 1000; /* 層級最高 */
+    opacity: 0; /* 初始隱藏 */
+    pointer-events: none; /* 禁用滑鼠事件 */
+    transition: opacity 0.3s ease; /* 過渡效果 */
+}
+
+.modal.show {
+    opacity: 1; /* 顯示狀態 */
+    pointer-events: auto; /* 啟用滑鼠事件 */
+}
+
+.modal-content {
+    background: #161b22; /* 背景色 */
+    border-radius: 10px; /* 圓角邊框 */
+    padding: 20px; /* 內距 */
+    width: 100%; /* 滿版寬度 */
+    max-width: 800px; /* 最大寬度 */
+    height: 100%; /* 滿版高度 */
+    max-height: 500px; /* 最大高度 */
+    color: #c9d1d9; /* 文字顏色 */
+    text-align: center; /* 文字置中 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* 陰影 */
+    position: relative; /* 為子元素定位提供參考 */
+    animation: slide-in 0.4s ease; /* 彈出效果 */
+}
+
+.modal-content img {
+    width: 100%; /* 滿版寬度 */
+    border-radius: 10px; /* 圓角 */
+}
+
+.modal-close {
+    position: absolute; /* 絕對定位 */
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #c9d1d9; /* 關閉按鈕顏色 */
+    font-size: 24px; /* 字型大小 */
+    cursor: pointer; /* 滑鼠變成手指 */
+}
+
+.modal-close:hover {
+    color: #58a6ff; /* 懸停時顏色變化 */
+}
+
+/* 專輯詳細內容的彈窗 */
+.album-details-modal-content {
+    display: flex;
+    flex-wrap: nowrap; /* 禁用換行 */
+}
+
+.album-details-modal-left {
+    flex: 1; /* 左側佔據 1 倍寬度 */
+    padding-right: 10px;
+    max-width: 200px; /* 最大寬度限制 */
+}
+
+.album-details-modal-right {
+    flex: 2; /* 右側佔據兩倍寬度 */
+    max-height: 400px; /* 最大高度限制 */
+    overflow: hidden; /* 隱藏溢出內容 */
+}
+
+.album-details-modal-right img {
+    max-width: 100%; /* 限制圖片寬度 */
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+/* 專輯歌曲清單 */
+.album-songs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px; /* 限制高度 */
+    overflow-y: auto; /* 垂直滾動 */
+    padding-right: 10px; /* 避免滾動條貼邊 */
+}
+
+.album-song-item {
+    border: 2px solid white;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* 動態歌詞區域 */
+#lyrics {
+    margin-top: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+    text-align: center;
+    font-size: 16px;
+    color: #58a6ff;
+}
+
+#lyrics p {
+    margin: 5px 0;
+}
+
+#lyrics p.active {
+    color: #c9d1d9;
+    font-weight: bold;
+    text-shadow: 0px 2px 5px rgba(255, 255, 255, 0.6);
+}
+
+/* 響應式設計：針對不同螢幕寬度 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    .album img {
+        height: 120px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    #lyrics {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 10px;
+    }
+
+    #lyrics {
+        font-size: 12px;
+    }
+}
+
+/* 播放器樣式 */
+.player {
+    margin-top: 20px;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.progress-container {
+    flex: 1;
+    height: 10px;
+    background: #34495e;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #1abc9c;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+#current-time,
+#duration {
+    color: white;
+    font-size: 14px;
+}
+
+#volume-slider {
+    width: 80px;
+}
