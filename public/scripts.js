@@ -1,19 +1,24 @@
+// 音樂撥放器
 let audioPlayer;
-let lyricsInterval;
+// 頁碼。用於分頁加載專輯
 let currentPage = 1;
 
-// 加載所有專輯
+// 加載所有專輯，預設從第一頁開始
 async function fetchAlbums(page = 1) {
   try {
+    // 向API發出請求，獲取專輯列表
     const response = await fetch(
       "https://monstersiren-web-api.vercel.app/api/albums"
     );
-    const { data: albums } = await response.json();
+    const { data: albums } = await response.json(); // 解析 JSON 回應
     const albumContainer = document.getElementById("albums");
 
+    // 如果是第一頁，清空專輯列表
     if (page === 1) {
-      albumContainer.innerHTML = ""; // 首頁清空列表
+      albumContainer.innerHTML = "";
     }
+
+    //動態生成專輯內容
     albums.forEach((album) => {
       const albumDiv = document.createElement("div");
       albumDiv.classList.add("album");
@@ -30,7 +35,7 @@ async function fetchAlbums(page = 1) {
                 }')">查看詳細</button>
             `;
 
-      // 检查文本宽度并添加滚动效果
+      // 檢查標題寬度，若超出容器則啟用滾動效果
       setTimeout(() => {
         const marqueeItem = albumDiv.querySelector(".marquee-item");
         const wrapper = albumDiv.querySelector(".marquee-item-wrapper");
@@ -39,6 +44,7 @@ async function fetchAlbums(page = 1) {
         }
       }, 0);
 
+      //將專輯內容加入版面
       albumContainer.appendChild(albumDiv);
     });
   } catch (error) {
@@ -46,12 +52,12 @@ async function fetchAlbums(page = 1) {
   }
 }
 
-// 滾動加載
+// 滾動加載更多專輯
 function handleScroll() {
   const albumContainer = document.getElementById("albums");
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
     currentPage++;
-    fetchAlbums(currentPage);
+    fetchAlbums(currentPage); //加載下一頁專輯
   }
 }
 
@@ -63,12 +69,13 @@ async function fetchAlbumDetails(albumId) {
     );
     const { data: album } = await response.json();
 
-    renderDetails("album", album);
+    renderDetails("album", album);  // 渲染專輯詳細資料
   } catch (error) {
     console.error("Error fetching album details:", error);
   }
 }
 
+// 顯示歌曲詳細信息
 async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
   try {
     const response = await fetch(
@@ -76,7 +83,7 @@ async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
     );
     const { data: song } = await response.json();
 
-    // 補全音頻 URL
+    // 設定音樂撥放器連結
     song.audioUrl = song.sourceUrl || "";
 
     // 處理歌曲歌詞
@@ -96,7 +103,7 @@ async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
       lyricsContent = `<p id="no-lyrics">暫無歌詞</p>`;
     }
 
-    // 使用傳入的專輯封面 URL 資料
+    // 渲染歌曲詳情與專輯封面
     const albumData = {
       coverUrl: coverUrl,
       coverDeUrl: coverDeUrl,
@@ -107,6 +114,7 @@ async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
     renderDetails("song", song, albumData);
 
     // 確保在渲染後再取得 audioPlayer
+    // 監聽音樂撥放器時間並同步歌詞
     setTimeout(() => {
       const audioElement = document.querySelector("audio");
       audioPlayer = audioElement;
@@ -119,6 +127,7 @@ async function fetchSongDetails(songId, coverUrl, coverDeUrl) {
   }
 }
 
+// 渲染專輯&歌曲詳細內容
 function renderDetails(mode, data, albumData = {}) {
   const modalBody = document.getElementById("modal-body");
 
@@ -214,7 +223,7 @@ function renderDetails(mode, data, albumData = {}) {
   showModal();
 }
 
-// 解析歌詞
+// 解析LRC歌詞
 async function fetchLyrics(lyricUrl) {
   try {
     const response = await fetch(lyricUrl);
@@ -226,6 +235,7 @@ async function fetchLyrics(lyricUrl) {
   }
 }
 
+// 解析 LRC 歌詞格式
 function parseLRC(lrc) {
   const lines = lrc.split("\n");
   return lines
@@ -242,6 +252,7 @@ function parseLRC(lrc) {
     .filter(Boolean);
 }
 
+// 同步歌詞與音樂撥放
 function syncLyrics() {
   const currentTime = audioPlayer.currentTime;
   const lyrics = document.querySelectorAll("#lyrics p");
@@ -282,18 +293,19 @@ function syncLyrics() {
   }
 }
 
-// 彈窗操作
+// 顯示彈窗
 function showModal() {
   const modal = document.getElementById("modal");
   modal.classList.add("show");
 }
 
+// 關閉彈窗並停止播放
 function closeModal() {
   const modal = document.getElementById("modal");
   modal.classList.remove("show");
   if (audioPlayer) audioPlayer.pause();
 }
 
-// 初始加載
+// 初始化頁面
 fetchAlbums();
 window.addEventListener("scroll", handleScroll);
