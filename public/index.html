@@ -10,13 +10,35 @@
 </head>
 
 <body>
-    <header>
-        <h1>明日方舟音樂播放器</h1>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="搜索專輯或歌曲...">
-            <button id="search-btn"><i class="fas fa-search"></i></button>
+    <!-- 頂部導覽列 -->
+    <nav class="main-navbar">
+        <div class="navbar-left">
+            <div class="page-title">當前頁面名稱</div>
         </div>
-    </header>
+        <div class="navbar-right">
+            <div class="logo-btn">Logo</div>
+        </div>
+    </nav>
+
+    <!-- 主區塊上方三欄 -->
+    <section class="topbar-section">
+        <div class="topbar-left">
+            <div id="audio-visualizer"></div>
+        </div>
+        <div class="topbar-center">
+            <div class="now-playing-bar">
+                <span id="now-playing-title">正在撥放歌曲名稱</span>
+                <button class="now-playing-dropdown" id="now-playing-dropdown-btn"><i class="fa-solid fa-chevron-down"></i></button>
+                <div id="now-playing-dropdown-list" class="now-playing-dropdown-list"></div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-container search-topbar">
+                <input type="text" id="search-input" placeholder="歌曲搜尋">
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </section>
     
     <main>
         <div id="loading" class="loading-spinner">
@@ -33,6 +55,9 @@
             <div id="modal-body"></div>
         </div>
     </div>
+
+    <!-- 全局唯一播放器（隱藏） -->
+    <audio id="audio-player" style="display:none;"></audio>
 
     <footer>
         <p>明日方舟音樂播放器 &copy; 2023</p>
