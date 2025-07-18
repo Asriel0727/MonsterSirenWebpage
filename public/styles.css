@@ -962,31 +962,20 @@ footer {
 }
 
 .page-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.logo-btn {
     background: var(--primary-color);
     color: #fff;
     font-weight: 600;
     font-size: 1.1rem;
     border-radius: 8px;
-    padding: 10px 32px;
-    box-shadow: 0 2px 8px rgba(88,166,255,0.08);
-    letter-spacing: 1px;
-}
-
-.logo-btn {
-    background: var(--primary-color);
-    color: #222;
-    font-weight: 500;
-    font-size: 1.1rem;
-    border-radius: 10px;
-    padding: 12px 36px;
-    box-shadow: 0 2px 8px rgba(88,166,255,0.08);
+    padding: 10px 20px;
     cursor: pointer;
-    transition: background 0.2s;
     border: none;
-}
-.logo-btn:hover {
-    background: #3d8eff;
-    color: #fff;
 }
 
 .topbar-section {
@@ -996,51 +985,48 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 32px;
+    gap: 20px;
     padding: 0 40px;
-    flex-wrap: nowrap;
-    min-width: 0;
-    overflow-x: auto;
-}
-.topbar-left, .topbar-center, .topbar-right {
-    flex: 1 1 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-}
-.topbar-left {
-    justify-content: flex-start;
-}
-.topbar-right {
-    justify-content: flex-end;
 }
 
-.topbar-left i {
-    color: var(--primary-color);
-    font-size: 2.2rem;
+.topbar-left {
+    flex: 1; /* 關鍵：讓左邊的播放列佔據所有剩餘空間 */
+    min-width: 0; /* 允許被壓縮 */
+}
+
+.topbar-right {
+    flex-shrink: 0; /* 右邊的搜尋列不壓縮 */
 }
 
 .now-playing-bar {
-    background: var(--card-bg);
-    color: var(--primary-color);
-    border-radius: 8px;
-    padding: 10px 28px;
-    font-weight: 500;
-    font-size: 1.05rem;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 8px rgba(88,166,255,0.08);
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 10px 15px;
+    width: 100%;
+    max-width: 600px;
     position: relative;
 }
-#now-playing-title {
-    max-width: 180px;
+
+.now-playing-marquee-container {
+    flex: 1;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+#now-playing-title {
     display: inline-block;
 }
+
+#now-playing-title.scrolling {
+    padding-left: 100%;
+    animation: marquee 15s linear infinite;
+}
+
 .now-playing-dropdown {
     background: var(--primary-color);
     color: #222;
@@ -1056,9 +1042,38 @@ footer {
     margin-left: 8px;
     transition: background 0.2s;
 }
+
 .now-playing-dropdown:hover {
     background: #3d8eff;
     color: #fff;
+}
+
+.dropdown-song-list {
+    position: absolute;
+    background-color: #161b22;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 999;
+    min-width: 220px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.dropdown-song-list.show {
+    display: block;
+}
+
+.dropdown-song-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #c9d1d9;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.dropdown-song-item:hover {
+    background-color: rgba(88, 166, 255, 0.1);
 }
 
 .search-topbar {
@@ -1066,8 +1081,8 @@ footer {
     border-radius: 8px;
     padding: 0 10px 0 0;
     box-shadow: 0 2px 8px rgba(88,166,255,0.08);
-    min-width: 240px;
-    max-width: 340px;
+    width: 250px;
+    height: 50px;
 }
 .search-topbar #search-input {
     background: transparent;
@@ -1104,8 +1119,8 @@ footer {
 /* 響應式設計 */
 @media (max-width: 900px) {
     .main-navbar, .topbar-section {
-        padding-left: 6px;
-        padding-right: 6px;
+        padding-left: 15px;
+        padding-right: 15px;
         gap: 8px;
     }
     .page-title, .logo-btn {
@@ -1131,6 +1146,14 @@ footer {
     }
     .topbar-left i {
         font-size: 1.3rem;
+    }
+    .topbar-section {
+        flex-direction: column; /* 在小螢幕上，播放列和搜尋列垂直堆疊 */
+        align-items: stretch; /* 讓項目填滿寬度 */
+        gap: 10px;
+    }
+    .now-playing-bar {
+        max-width: 100%;
     }
 }
 @media (max-width: 600px) {
@@ -1209,22 +1232,32 @@ footer {
 }
 
 .now-playing-dropdown-list {
-    display: none;
-    position: absolute;
-    top: 110%;
-    left: 0;
-    width: 260px;
-    max-height: 320px;
+    position: absolute; /* <--- 關鍵！相對於 now-playing-bar 定位 */
+    top: 105%;          /* <--- 從父容器頂部向下 105% (在正下方留一點空隙) */
+    left: 0;            /* <--- 左邊緣對齊父容器的左邊緣 */
+    width: 100%;        /* <--- 寬度和父容器一樣寬 */
+    
+    /* 顯示/隱藏的核心技巧 */
+    visibility: hidden; /* <--- 預設為隱藏，但依然佔據佈局空間 */
+    opacity: 0;         /* <--- 預設為完全透明 */
+    transition: opacity 0.2s ease, visibility 0.2s ease; /* 動畫效果 */
+    
+    /* 其他樣式 */
+    max-height: 60vh;
     overflow-y: auto;
     background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-    z-index: 100;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
     padding: 6px 0;
 }
+
 .now-playing-dropdown-list.show {
-    display: block;
+    visibility: visible; /* <--- 顯示時，變為可見 */
+    opacity: 1;          /* <--- 顯示時，變為不透明 */
 }
+
 .now-playing-dropdown-list .dropdown-song-item {
     padding: 8px 18px;
     color: var(--text-color);

@@ -19,24 +19,14 @@ let currentAlbumDetails = null;
 // 新增：用來追蹤 Modal 內顯示的是哪個畫面 ('album' 或 'player')
 let currentModalView = "album";
 
+let allSongsForDropdown = []; // 用來快取所有歌曲列表，避免重複請求
+
 let allFetchedAlbums = []; // 新增：用來儲存從 API 拿到的所有專輯
 let isInitialFetchDone = false; // 新增：追蹤那一次性的請求是否已完成
 const ALBUMS_PER_PAGE = 24; // 每頁顯示的數量
 
 // DOM 元素
-const albumsContainer = document.getElementById("albums");
-const modal = document.getElementById("modal");
-const modalBody = document.getElementById("modal-body");
-const loadingSpinner = document.getElementById("loading");
-const searchInput = document.getElementById("search-input");
-const searchBtn = document.getElementById("search-btn");
-const nowPlayingTitle = document.getElementById("now-playing-title");
-const nowPlayingDropdownBtn = document.getElementById(
-  "now-playing-dropdown-btn"
-);
-const nowPlayingDropdownList = document.getElementById(
-  "now-playing-dropdown-list"
-);
+let albumsContainer, modal, modalBody, loadingSpinner, searchInput, searchBtn, nowPlayingTitle, nowPlayingDropdownBtn, nowPlayingDropdownList;
 
 let nowPlayingSongList = [];
 let nowPlayingSongIndex = 0;
@@ -63,6 +53,79 @@ async function fetchWithCache(url) {
   sessionStorage.setItem(url, JSON.stringify(data));
 
   return data;
+}
+
+async function populateAllSongsDropdown() {
+    if (allSongsForDropdown.length > 0) {
+        // 如果已經載入過，就不再請求
+        return;
+    }
+
+    try {
+        const response = await fetch("https://monstersiren-web-api.vercel.app/api/songs");
+        if (!response.ok) throw new Error("無法獲取歌曲列表");
+
+        const { data } = await response.json();
+        // 我們只需要 cid 和 name 即可
+        allSongsForDropdown = data.list.map(song => ({
+            cid: song.cid,
+            name: song.name,
+            artistes: song.artists || ['未知演出者']
+        }));
+
+        nowPlayingDropdownList.innerHTML = ""; // 清空舊內容
+        allSongsForDropdown.forEach((song, idx) => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-song-item';
+            item.innerHTML = `<span>${song.name}</span> <span style="color:#8b949e;font-size:0.9em;">- ${song.artistes.join(', ')}</span>`;
+            
+            // 為每個項目加上點擊事件
+            item.onclick = (e) => {
+                e.stopPropagation();
+                playSongFromMasterList(song.cid); // 點擊後播放這首歌
+                hideNowPlayingDropdown();
+            };
+            nowPlayingDropdownList.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error("載入所有歌曲列表時出錯:", error);
+        nowPlayingDropdownList.innerHTML = `<div class="dropdown-song-item">列表載入失敗</div>`;
+    }
+}
+
+async function playSongFromMasterList(cid) {
+    try {
+        // 1. 透過歌曲ID獲取完整的歌曲詳情
+        const response = await fetch(`https://monstersiren-web-api.vercel.app/api/song/${cid}`);
+        if (!response.ok) throw new Error("歌曲詳情獲取失敗");
+        
+        const { data: songDetails } = await response.json();
+
+        // 2. 獲取封面圖等資訊
+        // 由於 /api/songs 列表沒有封面圖，我們需要從 /api/song/:id 的回傳中獲取
+        const albumCid = songDetails.albumCid;
+        const albumDetailResponse = await fetch(`https://monstersiren-web-api.vercel.app/api/album/${albumCid}/detail`);
+        if (!albumDetailResponse.ok) throw new Error("專輯詳情獲取失敗");
+
+        const { data: albumDetails } = await albumDetailResponse.json();
+
+        // 3. 組合出完整的歌曲物件
+        const songToPlay = {
+            ...songDetails,
+            artistes: songDetails.artistes || albumDetails.artistes,
+            coverUrl: albumDetails.coverUrl,
+            coverDeUrl: albumDetails.coverDeUrl
+        };
+        
+        // 4. 更新播放器狀態並播放
+        // 注意：這裡我們將播放列表暫時設為只包含這首歌
+        syncNowPlaying([songToPlay], 0); 
+        syncPlayerUI(songToPlay);
+
+    } catch (error) {
+        console.error(`播放歌曲 ${cid} 時出錯:`, error);
+    }
 }
 
 function showAlbumSkeleton() {
@@ -145,32 +208,37 @@ function renderNextAlbumChunk() {
 document.addEventListener("DOMContentLoaded", () => {
   // 1. 獲取必要的 DOM 元素
   audioPlayer = document.getElementById("audio-player");
-  const toggleBtn = document.getElementById("toggle-all-songs-btn");
-  const listDiv = document.getElementById("all-songs-list");
+  albumsContainer = document.getElementById("albums");
+  modal = document.getElementById("modal");
+  modalBody = document.getElementById("modal-body");
+  loadingSpinner = document.getElementById("loading");
+  searchInput = document.getElementById("search-input");
+  searchBtn = document.getElementById("search-btn");
+  nowPlayingTitle = document.getElementById("now-playing-title");
+  nowPlayingDropdownBtn = document.getElementById("now-playing-dropdown-btn");
+  nowPlayingDropdownList = document.getElementById("now-playing-dropdown-list");
 
   // 2. 執行初始設定
   initializeAlbums();
   setupEventListeners();
 
-  // 3. 附加「所有歌曲」列表的點擊事件
-  if (toggleBtn && listDiv) {
-    toggleBtn.addEventListener("click", async () => {
-      const isHidden =
-        listDiv.style.display === "none" || listDiv.style.display === "";
-      if (isHidden) {
-        listDiv.style.display = "block";
-        toggleBtn.innerHTML = "所有歌曲 ▲";
-        if (!allSongsBarLoaded) {
-          await loadAllSongsForBar();
-          allSongsBarLoaded = true;
+  if (nowPlayingDropdownBtn) {
+    nowPlayingDropdownBtn.onclick = async function (e) {
+        e.stopPropagation();
+
+        // 【核心修正】我們不再需要任何計算！只需要切換 .show class 即可！
+        if (nowPlayingDropdownList.classList.contains("show")) {
+            hideNowPlayingDropdown();
+        } else {
+            // 確保列表有內容
+            await populateAllSongsDropdown();
+            // 直接顯示
+            nowPlayingDropdownList.classList.add("show");
         }
-      } else {
-        listDiv.style.display = "none";
-        toggleBtn.innerHTML = "所有歌曲 ▼";
-      }
-    });
-    listDiv.style.display = "none";
-  }
+    };
+    // 這一行保持不變
+    document.body.addEventListener("click", hideNowPlayingDropdown);
+}
 
   // 4. 【核心修正】在這裡附加全局播放器的事件監聽器
   // 這個區塊必須在 audioPlayer 被賦值後執行
@@ -248,9 +316,38 @@ function handleScroll() {
 
 // 搜索處理
 function handleSearch() {
-  const query = searchInput.value.trim();
-  hasMore = true;
-  fetchAlbums(1, query);
+    // 獲取搜尋關鍵字，並轉換為小寫以便進行不分大小寫的比對
+    const query = searchInput.value.trim().toLowerCase();
+
+    // 1. 處理清空搜尋的情況
+    if (query === "") {
+        // 如果搜尋框是空的，就恢復到原本的、可滾動的完整列表
+        albumsContainer.innerHTML = ''; // 清空當前的搜尋結果
+        currentPage = 1;              // 重置頁碼
+        hasMore = true;                 // 重新啟用無限滾動
+        renderNextAlbumChunk();         // 顯示第一頁的完整內容
+        return;
+    }
+
+    // 2. 在本地 allFetchedAlbums 陣列中進行過濾
+    const filteredAlbums = allFetchedAlbums.filter(album => {
+        // 同時檢查專輯名稱和演出者名稱
+        const nameMatch = album.name.toLowerCase().includes(query);
+        const artistMatch = album.artistes.join(', ').toLowerCase().includes(query);
+        return nameMatch || artistMatch;
+    });
+
+    // 3. 顯示搜尋結果
+    albumsContainer.innerHTML = ''; // 清空容器
+    hasMore = false; // 關鍵：在顯示搜尋結果時，暫時關閉無限滾動
+
+    if (filteredAlbums.length > 0) {
+        // 如果有結果，就用 renderAlbums 函式將它們全部顯示出來
+        renderAlbums(filteredAlbums);
+    } else {
+        // 如果沒有結果，顯示提示訊息
+        albumsContainer.innerHTML = `<p class="no-results">沒有找到與 "${searchInput.value}" 相關的專輯</p>`;
+    }
 }
 
 // 獲取專輯詳情
@@ -594,11 +691,11 @@ function renderSongPlayerView(song, lyricsContent) {
 }
 
 // 同步歌詞
-function syncLyrics(currentTime) {
+function syncLyrics(currentTime, forceScroll = false) {
   if (!lyrics || lyrics.length === 0) return;
 
   const lyricsContainer = document.querySelector(".lyrics-container");
-  if (!lyricsContainer || isUserScrolled) return;
+  if (!lyricsContainer || (isUserScrolled && !forceScroll)) return;
 
   const lines = lyricsContainer.querySelectorAll(".lyrics-line");
   let activeLineIndex = -1;
@@ -626,7 +723,7 @@ function syncLyrics(currentTime) {
 
       lyricsContainer.scrollTo({
         top: targetScroll,
-        behavior: "smooth",
+        behavior: forceScroll ? "auto" : "smooth",
       });
     }
   }
@@ -809,7 +906,31 @@ function playSongFromAllSongsBar(idx) {
 
 // "Now Playing" 下拉列表功能
 function updateNowPlayingTitle(name) {
-  if (nowPlayingTitle) nowPlayingTitle.textContent = name || "正在撥放歌曲名稱";
+    if (!nowPlayingTitle) return;
+
+    const titleText = name || "暫無播放";
+    nowPlayingTitle.textContent = titleText;
+
+    const container = document.querySelector(".now-playing-marquee-container");
+    if (!container) return;
+
+    // 移除舊的動畫設定，以便重新計算
+    nowPlayingTitle.classList.remove("scrolling");
+    nowPlayingTitle.style.animation = '';
+
+    // 使用 setTimeout 確保 DOM 更新後再計算寬度
+    setTimeout(() => {
+        // 加上一點 buffer (例如 1px)，避免完全相等時不滾動
+        const hasOverflow = nowPlayingTitle.scrollWidth > container.clientWidth + 1;
+
+        if (hasOverflow) {
+            // 如果文字寬度大於容器寬度，啟用跑馬燈
+            nowPlayingTitle.classList.add("scrolling");
+            // 動態調整動畫時間，讓長文字滾得慢一點
+            const duration = nowPlayingTitle.scrollWidth / 40; // 調整 40 這個值可以改變滾動速度
+            nowPlayingTitle.style.animation = `marquee ${duration < 10 ? 10 : duration}s linear infinite`;
+        }
+    }, 100);
 }
 
 function showNowPlayingDropdown() {
@@ -834,18 +955,6 @@ function showNowPlayingDropdown() {
 
 function hideNowPlayingDropdown() {
   if (nowPlayingDropdownList) nowPlayingDropdownList.classList.remove("show");
-}
-
-if (nowPlayingDropdownBtn) {
-  nowPlayingDropdownBtn.onclick = function (e) {
-    e.stopPropagation();
-    if (nowPlayingDropdownList.classList.contains("show")) {
-      hideNowPlayingDropdown();
-    } else {
-      showNowPlayingDropdown();
-    }
-  };
-  document.body.addEventListener("click", hideNowPlayingDropdown);
 }
 
 function playFromNowPlayingDropdown(idx) {
@@ -963,7 +1072,7 @@ function seek(event) {
   const seekPosition = (event.clientX - rect.left) / rect.width;
   audioPlayer.currentTime = seekPosition * audioPlayer.duration;
   updatePlayerProgress();
-  syncLyrics(audioPlayer.currentTime);
+  syncLyrics(audioPlayer.currentTime, true);
 }
 
 function setVolume(volume) {

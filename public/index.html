@@ -13,7 +13,7 @@
     <!-- 頂部導覽列 -->
     <nav class="main-navbar">
         <div class="navbar-left">
-            <div class="page-title">當前頁面名稱</div>
+            <div class="page-title">專輯一覽</div>
         </div>
         <div class="navbar-right">
             <div class="logo-btn">Logo</div>
@@ -23,18 +23,18 @@
     <!-- 主區塊上方三欄 -->
     <section class="topbar-section">
         <div class="topbar-left">
-            <div id="audio-visualizer"></div>
-        </div>
-        <div class="topbar-center">
             <div class="now-playing-bar">
-                <span id="now-playing-title">正在撥放歌曲名稱</span>
+                <div id="audio-visualizer"></div>
+                <div class="now-playing-marquee-container">
+                    <span id="now-playing-title">暫無播放</span>
+                </div>
                 <button class="now-playing-dropdown" id="now-playing-dropdown-btn"><i class="fa-solid fa-chevron-down"></i></button>
-                <div id="now-playing-dropdown-list" class="now-playing-dropdown-list"></div>
+                <div id="now-playing-dropdown-list" class="dropdown-song-list"></div>
             </div>
         </div>
         <div class="topbar-right">
             <div class="search-container search-topbar">
-                <input type="text" id="search-input" placeholder="歌曲搜尋">
+                <input type="text" id="search-input" placeholder="搜尋專輯或歌曲...">
                 <button id="search-btn"><i class="fas fa-search"></i></button>
             </div>
         </div>
@@ -64,6 +64,7 @@
     </footer>
 
     <script src="scripts.js"></script>
+
 </body>
 
 </html>
