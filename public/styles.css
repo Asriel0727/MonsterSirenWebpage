@@ -50,6 +50,19 @@ h1 {
     letter-spacing: 1px;
 }
 
+.skeleton {
+    opacity: .7;
+    animation: pulse 1.5s linear infinite alternate;
+}
+@keyframes pulse {
+    from { background-color: #1a222c; }
+    to { background-color: #2c3a47; }
+}
+.skeleton-img { width: 100%; height: 300px; border-radius: 8px; }
+.skeleton-h2 { width: 60%; height: 2rem; margin-bottom: 1rem; }
+.skeleton-p { width: 100%; height: 1rem; margin-bottom: 0.5rem; }
+
+
 .search-container {
     display: flex;
     max-width: 600px;
@@ -347,6 +360,15 @@ main {
     margin-bottom: 15px;
 }
 
+.album-grid-visual-small {
+    width: 80%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 15px auto;
+}
+
 .song-list-header {
     display: flex;
     justify-content: space-between;
@@ -479,18 +501,53 @@ main {
     border-radius: 10px;
 }
 
+.player-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    align-items: center;
+}
+
+/* 左欄（播放器）和右欄（歌詞）的通用設定 */
+.player-view-left,
+.player-view-right {
+    display: flex;
+    flex-direction: column; /* 讓內部元素（圖片和文字）垂直排列 */
+    height: 100%; /* 確保它佔滿右欄的可用高度 */
+}
+
+/* 讓播放器容器填滿左欄 */
+.player-view-left .player-container {
+    margin-top: 0;
+    padding: 0;
+    background: none;
+}
+
+/* 讓歌詞容器填滿右欄，並設定一個最小高度 */
+.player-view-right .lyrics-container {
+    margin-top: 0;
+    max-height: 250px; /* 設定最大高度，您可以調整此數值 */
+    overflow-y: auto;  /* 當內容超過最大高度時，自動出現滾動條 */
+    background: rgba(13, 17, 23, 0.5); /* 加上背景讓區塊更明顯 */
+    padding: 20px;     /* 增加內邊距，讓文字與邊框有距離 */
+    border-radius: 8px;/* 圓角 */
+}
+
 .player-header {
     display: flex;
+    flex-direction: column; /* 將主軸方向改為垂直 */
     align-items: center;
     margin-bottom: 20px;
+    text-align: center;      /* 讓文字也置中 */
 }
 
 .player-cover {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+    width: 250px;
+    height: 250px;
+    border-radius: 200px;
     overflow: hidden;
-    margin-right: 15px;
+    margin-right: 0;      /* 移除右邊距 */
+    margin-bottom: 15px;  /* 新增下邊距，讓封面和曲名有間隔 */
     animation: spin 20s linear infinite;
     animation-play-state: paused;
 }
@@ -524,6 +581,15 @@ main {
     display: flex;
     flex-direction: column;
     gap: 15px;
+}
+
+.no-lyrics {
+    flex-grow: 1; /* 關鍵：讓這個元素自動填滿所有剩餘的垂直空間 */
+    display: flex;
+    justify-content: center; /* 水平置中 */
+    align-items: center;     /* 垂直置中 */
+    color: var(--text-secondary);
+    font-size: 1.1rem;
 }
 
 .controls-top {
